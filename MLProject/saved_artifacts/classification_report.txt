@@ -1,0 +1,19 @@
+Akurasi: 0.948
+
+Confusion Matrix:
+[[400   0   0   0]
+ [  0  80   0  20]
+ [  1   0 289  10]
+ [  0   9  12 179]]
+
+Classification Report:
+              precision    recall  f1-score   support
+
+           0       1.00      1.00      1.00       400
+           1       0.90      0.80      0.85       100
+           2       0.96      0.96      0.96       300
+           3       0.86      0.90      0.88       200
+
+    accuracy                           0.95      1000
+   macro avg       0.93      0.91      0.92      1000
+weighted avg       0.95      0.95      0.95      1000
