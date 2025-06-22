@@ -2,6 +2,8 @@ import pandas as pd
 import argparse
 import mlflow
 import mlflow.sklearn
+import os
+import joblib
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import classification_report, confusion_matrix, accuracy_score
@@ -29,6 +31,20 @@ def main(data_path):
         print("Akurasi:", round(acc, 4))
         print("\nConfusion Matrix:\n", confusion_matrix(y_test, y_pred))
         print("\nClassification Report:\n", classification_report(y_test, y_pred))
+
+        # Membuat folder artefak jika belum ada
+        os.makedirs("saved_artifacts", exist_ok=True)
+
+        # Simpan model ke file .pkl
+        joblib.dump(model, "saved_artifacts/model.pkl")
+
+        # Simpan hasil evaluasi ke file teks
+        with open("saved_artifacts/classification_report.txt", "w") as f:
+            f.write("Akurasi: " + str(round(acc, 4)) + "\n")
+            f.write("\nConfusion Matrix:\n")
+            f.write(str(confusion_matrix(y_test, y_pred)))
+            f.write("\n\nClassification Report:\n")
+            f.write(classification_report(y_test, y_pred))
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
