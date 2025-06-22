@@ -6,6 +6,9 @@ on:
       - MLProject/**
   workflow_dispatch:
 
+permissions:
+  contents: write
+  
 jobs:
   train-model:
     runs-on: ubuntu-latest
@@ -28,3 +31,12 @@ jobs:
         run: |
           cd MLProject
           mlflow run . --entry-point main --env-manager=local
+
+      - name: Commit artefak ke GitHub
+        run: |
+          git config --global user.name "github-actions"
+          git config --global user.email "github-actions@github.com"
+          git pull origin main  # Hindari konflik
+          git add MLProject/saved_artifacts/
+          git commit -m "CI: Tambahkan artefak hasil training"
+          git push origin main
