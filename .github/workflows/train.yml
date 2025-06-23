@@ -1,4 +1,4 @@
-name: CI Workflow
+name: CI Workflow (autolog run)
 
 on:
   push:
@@ -8,7 +8,7 @@ on:
 
 permissions:
   contents: write
-  
+
 jobs:
   train-model:
     runs-on: ubuntu-latest
@@ -25,18 +25,26 @@ jobs:
       - name: Install dependencies
         run: |
           pip install -r MLProject/requirements.txt
-          pip install mlflow
+          pip install mlflow scikit-learn pandas
 
-      - name: Run MLflow Project
+      - name: Run MLflow Project (autolog)
         run: |
           cd MLProject
-          mlflow run . --entry-point main --env-manager=local
+          mlflow run . --entry-point main --env-manager=local -P data_path=dataset_preprocessing
 
       - name: Commit artefak ke GitHub
         run: |
           git config --global user.name "github-actions"
           git config --global user.email "github-actions@github.com"
-          git pull origin main  # Hindari konflik
+          git pull origin main
+
+          mkdir -p MLProject/saved_artifacts
+          echo "Training run: $(date)" > MLProject/saved_artifacts/log.txt
           git add MLProject/saved_artifacts/
-          git commit -m "CI: Tambahkan artefak hasil training"
-          git push origin main
+
+          if git diff --cached --quiet; then
+            echo "Tidak ada artefak untuk dikomit."
+          else
+            git commit -m "CI: Tambah artefak autolog training"
+            git push origin main
+          fi
