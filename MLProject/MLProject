@@ -3,5 +3,5 @@ name: muchlish-mlproject
 entry_points:
   main:
     parameters:
-      data_path: {type: str, default: "dataset_preprocessing.csv"}
+      data_path: {type: str, default: "dataset_preprocessing"}
     command: "python modelling.py --data_path {data_path}"
