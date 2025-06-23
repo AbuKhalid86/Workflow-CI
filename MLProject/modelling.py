@@ -1,54 +1,21 @@
 import pandas as pd
-import argparse
 import mlflow
 import mlflow.sklearn
-import os
-import joblib
-from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import classification_report, confusion_matrix, accuracy_score
 
-def main(data_path):
-    # Load dataset
-    df = pd.read_csv(data_path)
-    X = df.drop('Air Quality', axis=1)
-    y = df['Air Quality']
+# Aktifkan autolog agar semua param, metrik, model tercatat otomatis
+mlflow.sklearn.autolog()
 
-    # Split train-test
-    X_train, X_test, y_train, y_test = train_test_split(
-        X, y, test_size=0.2, random_state=42, stratify=y
-    )
+# Baca data hasil preprocessing dari folder lokal
+train = pd.read_csv("train_data_scaled.csv")
+test = pd.read_csv("test_data_scaled.csv")
 
-    # Start MLflow tracking
-    
-    with mlflow.start_run(run_name="RandomForest-Baseline"):
-        mlflow.sklearn.autolog()
-        model = RandomForestClassifier(n_estimators=100, random_state=42)
-        model.fit(X_train, y_train)
-        y_pred = model.predict(X_test)
+# Pisah fitur dan target
+X_train, y_train = train.drop(columns="target"), train["target"]
+X_test, y_test = test.drop(columns="target"), test["target"]
 
-        acc = accuracy_score(y_test, y_pred)
-        print("Akurasi:", round(acc, 4))
-        print("\nConfusion Matrix:\n", confusion_matrix(y_test, y_pred))
-        print("\nClassification Report:\n", classification_report(y_test, y_pred))
-
-        # Membuat folder artefak jika belum ada
-        os.makedirs("saved_artifacts", exist_ok=True)
-
-        # Simpan model ke file .pkl
-        joblib.dump(model, "saved_artifacts/model.pkl")
-
-        # Simpan hasil evaluasi ke file teks
-        with open("saved_artifacts/classification_report.txt", "w") as f:
-            f.write("Akurasi: " + str(round(acc, 4)) + "\n")
-            f.write("\nConfusion Matrix:\n")
-            f.write(str(confusion_matrix(y_test, y_pred)))
-            f.write("\n\nClassification Report:\n")
-            f.write(classification_report(y_test, y_pred))
-
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--data_path", type=str, required=True)
-    args = parser.parse_args()
-
-    main(args.data_path)
+# Mulai run experiment lokal (Tracking URI default: localhost)
+with mlflow.start_run(run_name="basic_autolog_rf"):
+    model = RandomForestClassifier(random_state=42)
+    model.fit(X_train, y_train)
+    # Tidak perlu log_model lagi, karena autolog sudah mencatat otomatis
