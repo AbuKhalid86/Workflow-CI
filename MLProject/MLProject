@@ -3,5 +3,6 @@ name: muchlish-mlproject
 entry_points:
   main:
     parameters:
-      data_path: {type: str, default: "dataset_preprocessing"}
-    command: "python modelling.py --data_path {data_path}"
+      data_path: {type: str, default: "."}
+      save_path: {type: str, default: "saved_artifacts"}
+    command: "python modelling.py --data_path {data_path} --save_path {save_path}"
