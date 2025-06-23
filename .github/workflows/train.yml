@@ -3,7 +3,6 @@ name: CI Workflow (Preprocessing + Training)
 on:
   push:
     paths:
-      - preprocessing/automate_Muchlish.py
       - MLProject/**
   workflow_dispatch:
 
@@ -11,7 +10,7 @@ permissions:
   contents: write
 
 jobs:
-  full-pipeline:
+  train-model:
     runs-on: ubuntu-latest
 
     steps:
@@ -26,35 +25,23 @@ jobs:
       - name: Install dependencies
         run: |
           pip install -r MLProject/requirements.txt
-          pip install mlflow scikit-learn pandas seaborn matplotlib
+          pip install mlflow scikit-learn pandas
 
-      - name: Run preprocessing
-        run: |
-          python preprocessing/automate_Muchlish.py
-
-      - name: Verify preprocessing output exists
-        run: |
-          test -f dataset_preprocessing/train_data_scaled.csv
-          test -f dataset_preprocessing/test_data_scaled.csv
-
-      - name: Run MLflow Project (autolog)
+      - name: Jalankan training MLflow
         run: |
           cd MLProject
-          mlflow run . --entry-point main --env-manager=local -P data_path=dataset_preprocessing
+          mlflow run . --entry-point main --env-manager=local -P data_path=. -P save_path=saved_artifacts
 
-      - name: Commit artefak CI
+      - name: Commit artefak ke GitHub
         run: |
           git config --global user.name "github-actions"
           git config --global user.email "github-actions@github.com"
           git pull origin main
 
-          mkdir -p MLProject/saved_artifacts
-          echo "Run timestamp: $(date)" > MLProject/saved_artifacts/log.txt
           git add MLProject/saved_artifacts/
-
           if git diff --cached --quiet; then
-            echo "Tidak ada artefak untuk dikomit."
+            echo "✅ Tidak ada artefak baru untuk dikomit."
           else
-            git commit -m "CI: Update artefak setelah training"
+            git commit -m "CI: Update artefak hasil training"
             git push origin main
           fi
